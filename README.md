@@ -4,10 +4,15 @@ What I find interesting about these playlists is that they are in some way repre
 
 
 Some typical tracks from the 2020 playlist:
+
 Why Why Why Why Why - Sault
+
 Colors - Black Pumas
+
 Exit music (for a film) - Radiohead
+
 Blue World - Mac Miller
+
 H.f.g.w (Canyons Drunken Rage) - Tame Impala
 
 Some atypical tracks from the 2020 playlist:
