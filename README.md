@@ -45,3 +45,8 @@ Temporary - Lauren Jauregui
 SHUM - Go_A
 
 Symphony No.5: IV. Adagietto. Sehr Langsam - Gustav Mahler
+
+
+Week 2:
+I included two images. The first one is called mode vs key. I included it to show the ratio between the modes and minor major, for both of the years together. 
+The other image I included is shows the relationship between energy and valence, for both 2020 and 2021. It also shows the minor/major relation. 
