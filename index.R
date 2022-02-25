@@ -1,99 +1,40 @@
----
-title: "portfolio"
-author: "Noortje van der Veen"
-date: "2/23/2022"
-output: 
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    storyboard: true
----
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-```{r}
+install.packages('flexdashboard')
+install.packages("plotly")
+install.packages("Cairo")
 library(flexdashboard)
 library(plotly)
 library(ggplot2)
 library(tidyverse)
+library(Cairo)
 library(spotifyr)
-```
 
-```{r}
 id <- "81f3df676d604409abfe7d3452016983"
 secret <- "4dad5e4ae74e48849e41af9b3bc941c2"
 Sys.setenv(SPOTIFY_CLIENT_ID = id)
 Sys.setenv(SPOTIFY_CLIENT_SECRET = secret)
-```
 
-```{r}
 JTNV2020 <- get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=eace51fcd9ac4855")
-```
-
-
-Page 1
-===============================
-
-Column {.tabset .tabset-fade}
----------------------------------------
-
-### Chart 1
-
-```{r}
 JTNV2020
-```
 
-### Chart 2
-
-```{r}
-JTNV2021 <- get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=780acfc809e64cb1")
+JTNV2021 <- get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=261c2fc1668d4b99")
 JTNV2021
-```
 
-Column
---------------------------------
-
-### Chart 3
-
-```{r}
 topnummers <- bind_rows(
   JTNV2020 %>% mutate(category = "JTNV2020"),
   JTNV2021 %>% mutate(category = "JTNV2021")
 )
-```
 
 
-Page 2
-===================================
 
-### Chart 1
 
-```{r}
 topnummers %>%
   ggplot(aes(x = energy)) + geom_histogram(binwidth = 0.1) +
   facet_wrap(~category)
-```
 
-
-### Chart 2
-```{r}
-topnummers %>%
-  ggplot(aes(x = category, y = energy)) +
-  geom_violin()
-```
-
-### Chart 3
-
-```{r}
 topnummers %>% 
   ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth()
-```
 
 
-Page 3
-==================================
-
-### Chart 1
-```{r}
 energy_valence = topnummers %>% 
   mutate(
     mode = ifelse(mode == 0, "Minor", "Major")
@@ -156,8 +97,43 @@ energy_valence = topnummers %>%
 
 ggplotly(energy_valence)
 
+
+
+
+```{r}
+library(flexdashboard)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(spotifyr)
 ```
 
+```{r}
+id <- "81f3df676d604409abfe7d3452016983"
+secret <- "4dad5e4ae74e48849e41af9b3bc941c2"
+Sys.setenv(SPOTIFY_CLIENT_ID = id)
+Sys.setenv(SPOTIFY_CLIENT_SECRET = secret)
 
+```{r}
+id <- "81f3df676d604409abfe7d3452016983"
+secret <- "4dad5e4ae74e48849e41af9b3bc941c2"
+Sys.setenv(SPOTIFY_CLIENT_ID = id)
+Sys.setenv(SPOTIFY_CLIENT_SECRET = secret)
 
+```
+```{r}
+JTNV2020 <- get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=eace51fcd9ac4855")
+```
 
+JTNV2021 <- get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=780acfc809e64cb1")
+
+tophisto = topnummers %>%
+  ggplot(aes(x = energy)) + geom_histogram(binwidth = 0.1) +
+  facet_wrap(~category)
+
+topviolin = topnummers %>%
+  ggplot(aes(x = category, y = energy)) +
+  geom_violin()
+
+topsmooth = topnummers %>% 
+  ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth()
