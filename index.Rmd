@@ -16,6 +16,8 @@ library(plotly)
 library(ggplot2)
 library(tidyverse)
 library(spotifyr)
+library(compmus)
+
 ```
 
 ```{r, echo=FALSE}
@@ -168,5 +170,67 @@ ggplotly(energy_valence)
 ```
 
 
+Chroma Features
+==========================
 
+
+Chromagrams {.tabset}
+---------------------------
+
+### Top song of 2020, SAULT - whywhywhywhywhy
+
+```{r, echo=FALSE}
+
+whywhywhy <-
+  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=dcd0036a52154ea5") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+whywhywhy %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+```
+
+
+### Top song of 2021, Chaka Khan - I know you, I live you
+
+
+```{r}
+chaka <-
+  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=a6fff186744843ec") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+chaka %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+```
 

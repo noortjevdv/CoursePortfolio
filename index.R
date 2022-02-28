@@ -137,3 +137,12 @@ topviolin = topnummers %>%
 
 topsmooth = topnummers %>% 
   ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth()
+
+
+
+
+install.packages("compus")
+
+
+
+
