@@ -35,10 +35,10 @@ JTNV2020 <- get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=eace51fcd
 Introduction and datasets
 ===============================
 
-Column {.tabset .tabset-fade}
+Column 
 ---------------------------------------
 
-#For my corpus, I will use two of the playlists that spotify made for me. The first playlist is “Jouw topnummers van 2020” and the second playlist is “Jouw topnummers van 2021”. What I find interesting about these playlists is that they are in some way representative of the music that I listened to in 2020 and 2021. I’m interested in seeing if there are specific things that have changed when it comes to my music taste. I think the tracks in these playlists are quite representative when it comes to the music that I listened to during those periods of time.
+For my corpus, I will use two of the playlists that spotify made for me. The first playlist is “Jouw topnummers van 2020” and the second playlist is “Jouw topnummers van 2021”. What I find interesting about these playlists is that they are in some way representative of the music that I listened to in 2020 and 2021. I’m interested in seeing if there are specific things that have changed when it comes to my music taste. I think the tracks in these playlists are quite representative when it comes to the music that I listened to during those periods of time.
 
 Some typical tracks from the 2020 playlist:
 
@@ -82,6 +82,10 @@ Symphony No.5: IV. Adagietto. Sehr Langsam - Gustav Mahler
 
 Week 2: I included two images. The first one is called mode vs key. I included it to show the ratio between the modes and minor major, for both of the years together. The other image I included is shows the relationship between energy and valence, for both 2020 and 2021. It also shows the minor/major relation.
 
+
+Column {.tabset .tabset-fade}
+-----------------------------
+
 ### Chart 1
 
 ```{r}
@@ -94,20 +98,13 @@ JTNV2020
 ```{r}
 JTNV2021 <- get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=780acfc809e64cb1")
 JTNV2021
-```
 
-Column
---------------------------------
-
-### Chart 3
-
-```{r}
 topnummers <- bind_rows(
   JTNV2020 %>% mutate(category = "JTNV2020"),
   JTNV2021 %>% mutate(category = "JTNV2021")
 )
-```
 
+```
 
 Visualisation
 ===================================
