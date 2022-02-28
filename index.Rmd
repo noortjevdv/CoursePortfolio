@@ -8,7 +8,7 @@ output:
     storyboard: true
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 ```{r}
 library(flexdashboard)
@@ -18,7 +18,7 @@ library(tidyverse)
 library(spotifyr)
 ```
 
-```{r}
+```{r, echo=FALSE}
 id <- "81f3df676d604409abfe7d3452016983"
 secret <- "4dad5e4ae74e48849e41af9b3bc941c2"
 Sys.setenv(SPOTIFY_CLIENT_ID = id)
@@ -30,7 +30,7 @@ JTNV2020 <- get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=eace51fcd
 ```
 
 
-Page 1
+Introduction and datasets
 ===============================
 
 Column {.tabset .tabset-fade}
@@ -62,38 +62,47 @@ topnummers <- bind_rows(
 ```
 
 
-Page 2
+Visualisation
 ===================================
+
+Column {.tabset .tabset-fade}
+-----------------------------------
 
 ### Chart 1
 
 ```{r}
-topnummers %>%
+tophisto = topnummers %>%
   ggplot(aes(x = energy)) + geom_histogram(binwidth = 0.1) +
   facet_wrap(~category)
+
+ggplotly(tophisto)
 ```
 
 
 ### Chart 2
 ```{r}
-topnummers %>%
+topviolin = topnummers %>%
   ggplot(aes(x = category, y = energy)) +
   geom_violin()
+
+ggplotly(topviolin)
 ```
 
 ### Chart 3
 
 ```{r}
-topnummers %>% 
+topsmooth = topnummers %>% 
   ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth()
+
+ggplotly(topsmooth)
 ```
 
 
-Page 3
-==================================
+
 
 ### Chart 1
-```{r}
+```{r, echo=FALSE}
+
 energy_valence = topnummers %>% 
   mutate(
     mode = ifelse(mode == 0, "Minor", "Major")
