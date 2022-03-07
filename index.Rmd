@@ -6,6 +6,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     storyboard: true
+    theme: "cerulean"
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -17,6 +18,8 @@ library(ggplot2)
 library(tidyverse)
 library(spotifyr)
 library(compmus)
+library(hexbin)
+library(shiny)
 
 ```
 
@@ -32,10 +35,212 @@ JTNV2020 <- get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=eace51fcd
 ```
 
 
+Chroma Features
+==========================
+
+
+Top song of 2020, SAULT - whywhywhywhywhy {.tabset}
+---------------------------
+
+### Top song of 2020, SAULT - whywhywhywhywhy, Pitch
+
+```{r, echo=FALSE}
+
+whywhywhy <-
+  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=dcd0036a52154ea5") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+whywhywhy %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+
+```
+
+### Timbre
+
+```{r}
+w5 <-
+  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76") %>% 
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+
+
+
+w5 %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+
+### Self similarity
+
+```{r}
+w5 %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+
+```
+
+
+
+
+
+
+Top song of 2021, Chaka Khan - I know you, I live you {.tabset}
+----------------
+
+### Top song of 2021, Chaka Khan - I know you, I live you, Pitch
+
+```{r}
+chaka <-
+  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=a6fff186744843ec") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+chaka %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+```
+
+### Timbre, 
+
+```{r}
+ikyily <-
+  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637") %>% 
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+
+
+ikyily %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+
+### Self similarity, 
+
+```{r}
+ikyily %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+
+
+
+
 Introduction and datasets
 ===============================
 
-Column 
+Column
 ---------------------------------------
 
 For my corpus, I will use two of the playlists that spotify made for me. The first playlist is “Jouw topnummers van 2020” and the second playlist is “Jouw topnummers van 2021”. What I find interesting about these playlists is that they are in some way representative of the music that I listened to in 2020 and 2021. I’m interested in seeing if there are specific things that have changed when it comes to my music taste. I think the tracks in these playlists are quite representative when it comes to the music that I listened to during those periods of time.
@@ -109,10 +314,35 @@ topnummers <- bind_rows(
 Visualisation
 ===================================
 
-Column {.tabset .tabset-fade}
+Column{data-width=400}
 -----------------------------------
 
-### Chart 1
+###Chart 1
+
+
+***
+2020:
+```{r, echo=FALSE}
+summary(JTNV2020$energy)
+```
+
+***
+2021:
+```{r, echo=FALSE}
+summary(JTNV2021$energy)
+```
+
+***
+In the histogram, you can see the energy count per playlist. The included summary shows that both the median and the mean are not too far apart when you compare the 2020 and 2021 playlists. There is however, some difference when you look at the minimum and maximum energy. In my opinion this would mean that in 2021 I listened to a wider variety of music when it comes to energy.
+
+The second chart shows that the 2020 playlist has a wider density. This could be explained by the minimum and maximum being less far apart, which makes the density wider. 
+
+
+
+Column{data-width=600}
+-----------------------------------
+
+### Chart 1 {data-padding=10}
 
 ```{r}
 tophisto = topnummers %>%
@@ -132,19 +362,47 @@ topviolin = topnummers %>%
 ggplotly(topviolin)
 ```
 
-### Chart 3
-
+More visualisation
+====================
+  
+Column{data-width=300}
+------------------
+  
+  Correlation 2020 - Energy / Valence
 ```{r}
+cor(JTNV2020$energy, JTNV2020$valence)
+```
+
+Correlation 2021 - Energy / Valence
+```{r}
+cor(JTNV2021$energy, JTNV2021$valence)
+```
+
+
+Energy valence 
+
+The first graph shows the relation between energy and valence for both 2020 and 2021. I also calculated the correlation between these two variables. That calculation suggests that there is more correlation between energy and valence in the 2020 playlist than in the 2021 playlist. This is visually confirmed by the second chart, which in addition to energy and valence, also shows minor and major. The values seem to be more scattered in the 2021 graph.
+
+Something I found interesting about this graph is that in the 2020 chart, minor songs generally score higher than major songs when it comes to energy. Something I think could explain this is that the top ten songs with the highest energy are all (hard)rock songs. These songs are often quite high in energy, even when they are in a minor key.
+
+Another thing I found interesting about this graph is that the song with both the least energy and valence in the 2021 chart, is actually a song that does not really belong in the playlist. Last year I took a Musicological History course, for which we had to take a listening test, to prove that we were able to recognize a song by hearing it. One of the songs that I struggled with while studying was Symphony No. 5: IV. Adagietto. Sehr langsam by Gustav Mahler. This is the song with the lowest energy and valence. This means that it is not really a representative song, since I didn’t listen to it because I wanted to, but because I had to.
+
+
+Column{data-width=700, .tabset .tabset-fade}
+----------------
+  
+### Chart 3 {data-padding=10}
+  
+  ```{r}
 topsmooth = topnummers %>% 
-  ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth()
+  ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() + 
+  facet_wrap(~playlist_name, dir = "v")
 
 ggplotly(topsmooth)
 ```
 
 
-
-
-### Chart 1
+### Chart 4
 ```{r, echo=FALSE}
 
 energy_valence = topnummers %>% 
@@ -212,67 +470,26 @@ ggplotly(energy_valence)
 ```
 
 
-Chroma Features
-==========================
 
 
-Chromagrams {.tabset}
----------------------------
-
-### Top song of 2020, SAULT - whywhywhywhywhy
-
-```{r, echo=FALSE}
-
-whywhywhy <-
-  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=dcd0036a52154ea5") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-whywhywhy %>%
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-  compmus_gather_chroma() %>% 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c()
-
-```
 
 
-### Top song of 2021, Chaka Khan - I know you, I live you
 
+Danceability
+===================
+Distribution of Danceability Data. 
 
 ```{r}
-chaka <-
-  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=a6fff186744843ec") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
+viz4 <- ggplot(topnummers, aes(x=danceability, fill=playlist_name,
+                            text = paste(playlist_name)))+
+  geom_density(alpha=0.4, color=NA)+
+  scale_fill_manual(values=c("blue", "orange"))+
+  labs(x="Danceability", y="Density") +
+  guides(fill=guide_legend(title="Playlist"))+
+  theme_minimal()+
+  ggtitle("Distribution of Danceability Data")
 
-chaka %>%
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-  compmus_gather_chroma() %>% 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c()
-
+ggplotly(viz4, tooltip=c("text"))
 ```
+
 
