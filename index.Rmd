@@ -105,7 +105,6 @@ Column {.tabset .tabset-fade}
 
 ```{r}
 JTNV2020
-
 ```
 
 ### Chart 2
@@ -290,8 +289,21 @@ ggplotly(energy_valence)
 Danceability{data-navmenu="Features per year"}
 ===================
 
-Column 1{data-width=300, data-padding=20}
+Column 1{data-width=200}
+-----------------
+***
+Danceability says something about how suitable a track is for dancing. This is based on multiple musical elements. Some of those elements are energy, temp, rhythm stability and beat strength. 
+The 2020 playlist has a higher median and a higher mean when it comes to the danceability variable. 
+What I find interesting about this is that the 2021 playlist had a higher energy mean. 
+There was barely any difference between the two playlists when it comes to the average tempo, with the 2021 playlist scoring 1.5 BPM higher on the average tempo. 
+When I look at the top ten songs with the highest danceability for both playlists, I don’t see any differences that would give a logical explanation as to why the 2020 playlist has a higher mean danceability. 
+When I look at the top ten songs with the lowest danceability, it makes more sense that the 2021 playlist scored lower. There are two songs from a classical music playlist that I had to listen to for a school assignment. Besides that I listened to more rock songs in 2021, and a few of those songs apparently score really low on danceability. 
+
+
+Column 2{data-width=300, data-padding=20, .tabset .tabset-fade}
 -----------
+
+### Summary 
 
 ***
 2020
@@ -305,10 +317,31 @@ summary(JTNV2020$danceability)
 summary(JTNV2021$danceability)
 ```
 
-***
-Text explaining the data etc. 
 
-Column 2{data-width=700}
+### 2020 Lowest Danceability
+```{r}
+subJTNV2020 = subset(JTNV2020,select = c(danceability, track.name))
+
+asc.dance.2020 = subJTNV2020 %>%
+  arrange(danceability)
+
+asc.dance.2020
+```
+
+
+### 2021 Lowest Danceability
+```{r}
+subJTNV2021 = subset(JTNV2021,select = c(danceability, track.name))
+
+asc.dance.2021 = subJTNV2021 %>%
+  arrange(danceability)
+
+asc.dance.2021
+```
+
+
+
+Column 3{data-width=500}
 ---------
 
 ### Distribution of Danceability Data. 
@@ -549,6 +582,10 @@ keymode = topnummers %>%
 keymode
 ```
 
+### Mode
+```{r}
+ggplot(topnummers, aes(x=mode)) + geom_histogram() + facet_wrap(~playlist_name) + labs(x = "mode: 0 = minor, 1 = major")
+```
 
 
 Tempo features{data-navmenu="Features per year"}
@@ -644,6 +681,16 @@ beide %>%
                fun.max = max) 
 
 ggplotly(`tempo mean`)
+```
+
+### Tempo histogram
+
+```{r}
+tempohistogram = ggplot(topnummers, aes(x=tempo)) + 
+  geom_histogram(color="black", fill="white") + 
+  facet_wrap(~playlist_name) 
+
+ggplotly(tempohistogram)
 ```
 
 
@@ -803,4 +850,10 @@ w52 %>%
   theme_minimal() +
   labs(x = "Time (s)", y = "")
 ```
+
+
+
+
+
+
 
