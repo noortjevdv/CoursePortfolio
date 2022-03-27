@@ -20,6 +20,10 @@ library(spotifyr)
 library(compmus)
 library(hexbin)
 library(shiny)
+library(ggpubr)
+library(tidymodels)
+library(ggdendro)
+library(heatmaply)
 
 ```
 
@@ -97,7 +101,6 @@ SHUM - Go_A
 Symphony No.5: IV. Adagietto. Sehr Langsam - Gustav Mahler
 
 
-
 Column {.tabset .tabset-fade}
 -----------------------------
 
@@ -106,6 +109,11 @@ Column {.tabset .tabset-fade}
 ```{r}
 JTNV2020
 ```
+
+***
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4uti3gC6MRxJFVu3P6Zq09?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
 
 ### Chart 2
 
@@ -694,6 +702,22 @@ ggplotly(tempohistogram)
 ```
 
 
+### time signature - tempo -mode
+
+```{r}
+timesigtempo = ggplot(topnummers, aes(x = time_signature, y = tempo, color = as.factor(mode))) +
+  geom_point(alpha = 0.5) + labs(title = "Time signature, tempo and mode",
+                       x = "Time Signature",
+                       y = "Tempo",
+                       color = "Mode") +
+  
+  facet_wrap(~playlist_name) +
+  scale_color_manual(values = c("pink", "coral")) +  
+  scale_color_discrete(labels = c("minor", "major"))
+
+ggplotly(timesigtempo)
+```
+
 
 Key per song{data-navmenu="Features per topsong"}
 ==============
@@ -856,4 +880,279 @@ w52 %>%
 
 
 
+
+
+
+Speechiness and Acousticness{data-navmenu="Features per year"}
+============
+
+Means{data-width=300}
+----------
+### Means
+mean speechiness 2020
+```{r}
+mean(JTNV2020$speechiness)
+```
+
+mean speechiness 2021
+```{r}
+mean(JTNV2021$speechiness)
+```
+
+mean acousticness 2020
+```{r}
+mean(JTNV2020$acousticness)
+```
+
+mean acousticness 2021
+```{r}
+mean(JTNV2021$acousticness)
+```
+
+
+### Explaination
+As you can see, the mean for acousticness is higher for the 2021 playlist and the mean for speechiness is higher for the 2020 playlist. The 'outlier' that can be seen in the histogram for the 2020 playlist is a rap song called D/Vision by JID. The fact that it is a rap song explains the high level of speechiness. Most of the songs with high acousticness are classical songs, of which some are from a classical playlist that I had to study for a school assignment. 
+
+Graphs{data-width=700, .tabset .tabset-fade}
+----------
+
+### Histogram Speechiness
+
+```{r}
+speechihist = topnummers %>%
+  ggplot(aes(x = speechiness)) + geom_histogram() + facet_wrap(~playlist_name, dir = "v")
+
+ggplotly(speechihist)
+```
+
+### Histogram Acousticness
+
+```{r}
+acousthist = topnummers %>%
+  ggplot(aes(x = acousticness)) + geom_histogram() + facet_wrap(~playlist_name, dir = "v")
+
+ggplotly(acousthist)
+```
+
+
+### Acousticness - Speechiness
+
+
+```{r}
+acsp = topnummers %>% 
+  ggplot(aes(x = speechiness, y = acousticness)) + geom_point(alpha = 0.7) + geom_smooth() + 
+  facet_wrap(~playlist_name, dir = "v")
+
+ggplotly(acsp)
+```
+
+
+
+Dendograms{data-navmenu="Features per year"}
+==============
+
+Text{data-width=300}
+---------
+
+
+Dendogram{.tabset .tabset-fade}
+----------
+
+### 2020
+```{r}
+mark2020 <-
+  get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=d70969c7136a48f6") %>%
+  add_audio_analysis() %>%
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) %>%
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+
+mark2020_juice <-
+  recipe(
+    track.name ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = mark2020
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors()) %>% 
+  # step_range(all_predictors()) %>% 
+  prep(mark2020 %>% mutate(track.name = str_trunc(track.name, 20))) %>%
+  juice() %>%
+  column_to_rownames("track.name")
+
+goed2020.20 = mark2020_juice %>%
+  slice(1:20)
+
+jtnv2020mark_dist <- dist(goed2020.20, method = "euclidean")
+
+jtnv2020mark_dist %>% 
+  hclust(method = "single") %>% # Try single, average, and complete.
+  dendro_data() %>%
+  ggdendrogram()
+
+```
+
+
+### 2021
+
+```{r}
+mark2021 <-
+  get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=abc053435c0e4bc7") %>%
+  add_audio_analysis() %>%
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) %>%
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+
+mark2021_juice <-
+  recipe(
+    track.name ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    data = mark2021
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors()) %>% 
+  # step_range(all_predictors()) %>% 
+  prep(mark2021 %>% mutate(track.name = str_trunc(track.name, 20))) %>%
+  juice() %>%
+  column_to_rownames("track.name")
+
+goed2021.20 = mark2021_juice %>%
+  slice(1:20)
+
+jtnv2021mark_dist <- dist(goed2021.20, method = "euclidean")
+
+jtnv2021mark_dist %>% 
+  hclust(method = "single") %>% # Try single, average, and complete.
+  dendro_data() %>%
+  ggdendrogram()
+```
+
+
+### Heat map 2020
+
+```{r}
+goed2020.20 = mark2020_juice %>%
+  slice(1:20)
+
+heatmaply(
+  goed2020.20,
+  hclustfun = hclust,
+  hclust_method = "average",  # Change for single, average, or complete linkage.
+  dist_method = "euclidean"
+)
+```
+
+
+### Heat map 2021
+
+```{r}
+goed2021.20 = mark2021_juice %>%
+  slice(1:20)
+
+heatmaply(
+  goed2021.20,
+  hclustfun = hclust,
+  hclust_method = "average",  # Change for single, average, or complete linkage.
+  dist_method = "euclidean"
+)
+```
+
+
+
+
+
+Tempograms
+=============
+
+Text{data-width=300}
+---------
+
+
+Tempograms{.tabset .tabset-fade}
+------------
+
+### 2020
+
+```{r}
+wx5 <- get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76")
+
+wx5 %>% tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+
+```
+
+
+### 2021
+
+```{r}
+ikyily2 <-get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637")
+
+ikyily2 %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
 
