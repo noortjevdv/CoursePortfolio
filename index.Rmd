@@ -34,8 +34,22 @@ Sys.setenv(SPOTIFY_CLIENT_ID = id)
 Sys.setenv(SPOTIFY_CLIENT_SECRET = secret)
 ```
 
+
 ```{r}
 JTNV2020 <- get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=eace51fcd9ac4855")
+```
+
+```{r}
+JTNV2021 <- get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=780acfc809e64cb1")
+```
+
+```{r}
+
+topnummers <- bind_rows(
+  JTNV2020 %>% mutate(category = "JTNV2020"),
+  JTNV2021 %>% mutate(category = "JTNV2021")
+)
+
 ```
 
 
@@ -45,15 +59,22 @@ Introduction and datasets
 Column{.tabset .tabset-fade}
 ---------------------------------------
 
-### INTRO
+### Introduction
 
 For my corpus, I will use two of the playlists that spotify made for me. 
 The first playlist is **“Jouw topnummers van 2020”** and the second playlist is **“Jouw topnummers van 2021”**. What I find interesting about these playlists is that they are in some way representative of the music that I listened to in 2020 and 2021. I’m interested in seeing if there are specific things that have changed when it comes to my music taste. I think the tracks in these playlists are quite representative when it comes to the music that I listened to during those periods of time.
 
 When comparing two tracks, it seemed most logical to me to compare the number one songs from both years. 
 For 2020 that song is : **Why Why Why Why Why - Sault**
-For 2021 that song is: I know you, I live you - Chaka Khan
+For 2021 that song is: **I know you, I live you - Chaka Khan**
 
+Some features that I will look into include valence, energy, tempo, key and mode. 
+I am not sure what my general preference is when it comes to these features, so I am interested to see if there are some things that stand out. 
+
+On the side, you can see a little bit of the tables that contain the information about my toptracks from 2020 and 2021. The full table consists of 100 tracks per playlist, with 60 columns containing information about these tracks. 
+
+***
+The 2020 playlist will be represented by the color **red** in some of the graphs, while the 2021 playlist will be represented by the color **blue**. 
 
 ### Typical and Atypical tracks
 
@@ -104,31 +125,31 @@ Symphony No.5: IV. Adagietto. Sehr Langsam - Gustav Mahler
 Column {.tabset .tabset-fade}
 -----------------------------
 
-### Chart 1
+#### Table 2020
 
 ```{r}
-JTNV2020
+knitr::kable(JTNV2020[1:10,8:13], "pipe" )
 ```
 
-***
 
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4uti3gC6MRxJFVu3P6Zq09?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
-
-
-### Chart 2
+#### Table 2021
 
 ```{r}
-JTNV2021 <- get_playlist_audio_features("", "4uti3gC6MRxJFVu3P6Zq09?si=780acfc809e64cb1")
-JTNV2021
-
-topnummers <- bind_rows(
-  JTNV2020 %>% mutate(category = "JTNV2020"),
-  JTNV2021 %>% mutate(category = "JTNV2021")
-)
-
+knitr::kable(JTNV2021[1:10,8:13], "pipe" )
 ```
 
-Energy{data-navmenu="Features per year"}
+
+
+
+
+
+
+
+
+
+
+
+Energy{data-navmenu="Tempo and Rhythm Related Features"}
 ===================================
 
 Column{data-width=400}
@@ -163,8 +184,9 @@ Column{data-width=600}
 
 ```{r}
 tophisto = topnummers %>%
-  ggplot(aes(x = energy)) + geom_histogram(binwidth = 0.1) +
-  facet_wrap(~category)
+  ggplot(aes(x = energy, fill = playlist_name)) + geom_histogram(binwidth = 0.1) +
+  facet_wrap(~category) + 
+  scale_fill_manual(values = c("light blue", "tomato"))
 
 ggplotly(tophisto)
 ```
@@ -173,13 +195,15 @@ ggplotly(tophisto)
 ### Energy per year 2
 ```{r}
 topviolin = topnummers %>%
-  ggplot(aes(x = category, y = energy)) +
-  geom_violin()
+  ggplot(aes(x = category, y = energy , col = playlist_name)) +
+  geom_violin() + scale_color_manual(values = c("light blue", "tomato"))
 
 ggplotly(topviolin)
+
 ```
 
-Energy-Valence{data-navmenu="Features per year"}
+
+Energy-Valence{data-navmenu="Tempo and Rhythm Related Features"}
 ====================
   
 Column{data-width=300}
@@ -214,14 +238,15 @@ Column{data-width=700, .tabset .tabset-fade}
   
 ```{r}
 topsmooth = topnummers %>% 
-  ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() + 
-  facet_wrap(~playlist_name, dir = "v")
+  ggplot(aes(x = valence, y = energy, fill = playlist_name)) + geom_point() + geom_smooth() + 
+  facet_wrap(~playlist_name, dir = "v") +
+  scale_fill_manual(values = c("light blue", "tomato"))
 
 ggplotly(topsmooth)
 ```
 
 
-### Energy Valence Mode 4
+### Energy Valence Mode 
 ```{r, echo=FALSE}
 
 energy_valence = topnummers %>% 
@@ -289,23 +314,36 @@ ggplotly(energy_valence)
 ```
 
 
+### Valence Boxplot
+
+```{r}
+valenceplot = topnummers %>% 
+  ggplot(aes(x = playlist_name, y = valence, fill = playlist_name)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("light blue", "tomato")) 
+
+ggplotly(valenceplot)
+```
 
 
 
 
 
-Danceability{data-navmenu="Features per year"}
+
+Danceability{data-navmenu="Tempo and Rhythm Related Features"}
 ===================
 
 Column 1{data-width=200}
 -----------------
+### Danceability
 ***
-Danceability says something about how suitable a track is for dancing. This is based on multiple musical elements. Some of those elements are energy, temp, rhythm stability and beat strength. 
+Danceability says something about how suitable a track is for dancing. 
+This is based on multiple musical elements. Some of those elements are energy, tempo, rhythm stability and beat strength. 
 The 2020 playlist has a higher median and a higher mean when it comes to the danceability variable. 
-What I find interesting about this is that the 2021 playlist had a higher energy mean. 
+What I find interesting about this is that the 2021 playlist had a **higher mean energy**. 
 There was barely any difference between the two playlists when it comes to the average tempo, with the 2021 playlist scoring 1.5 BPM higher on the average tempo. 
 When I look at the top ten songs with the highest danceability for both playlists, I don’t see any differences that would give a logical explanation as to why the 2020 playlist has a higher mean danceability. 
-When I look at the top ten songs with the lowest danceability, it makes more sense that the 2021 playlist scored lower. There are two songs from a classical music playlist that I had to listen to for a school assignment. Besides that I listened to more rock songs in 2021, and a few of those songs apparently score really low on danceability. 
+When I look at the top ten songs with the **lowest danceability**, it makes more sense that the 2021 playlist scored lower. There are two songs from a **classical music** playlist that I had to listen to for a school assignment. Besides that I listened to more **rock songs** in 2021, and a few of those songs apparently score really low on danceability. 
 
 
 Column 2{data-width=300, data-padding=20, .tabset .tabset-fade}
@@ -326,25 +364,26 @@ summary(JTNV2021$danceability)
 ```
 
 
-### 2020 Lowest Danceability
+### Lowest Danceability
+***
+2020
 ```{r}
 subJTNV2020 = subset(JTNV2020,select = c(danceability, track.name))
 
 asc.dance.2020 = subJTNV2020 %>%
   arrange(danceability)
 
-asc.dance.2020
+knitr::kable(asc.dance.2020[1:10,], "pipe" )
 ```
 
-
-### 2021 Lowest Danceability
+2021
 ```{r}
 subJTNV2021 = subset(JTNV2021,select = c(danceability, track.name))
 
 asc.dance.2021 = subJTNV2021 %>%
   arrange(danceability)
 
-asc.dance.2021
+knitr::kable(asc.dance.2021[1:10,], "pipe" )
 ```
 
 
@@ -357,8 +396,8 @@ Column 3{data-width=500}
 ```{r}
 viz4 <- ggplot(topnummers, aes(x=danceability, fill=playlist_name,
                             text = paste(playlist_name)))+
-  geom_density(alpha=0.4, color=NA)+
-  scale_fill_manual(values=c("blue", "orange"))+
+  geom_density(alpha=0.8, color=NA)+
+  scale_fill_manual(values=c("dark blue", "tomato"))+
   labs(x="Danceability", y="Density") +
   guides(fill=guide_legend(title="Playlist"))+
   theme_minimal()+
@@ -368,263 +407,57 @@ ggplotly(viz4, tooltip=c("text"))
 ```
 
 
-Chroma Features{data-navmenu="Features per topsong"}
-==========================
-
-
-Top song of 2020, SAULT - whywhywhywhywhy {.tabset}
----------------------------
-
-### Top song of 2020, SAULT - whywhywhywhywhy, Pitch
-
-```{r, echo=FALSE}
-
-whywhywhy <-
-  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=dcd0036a52154ea5") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-whywhywhy %>%
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-  compmus_gather_chroma() %>% 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c()
-
-
-```
-
-### Timbre
-
-```{r}
-w5 <-
-  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76") %>% 
-  compmus_align(bars, segments) %>%                     # Change `bars`
-  select(bars) %>%                                      #   in all three
-  unnest(bars) %>%                                      #   of these lines.
-  mutate(
-    pitches =
-      map(segments,
-          compmus_summarise, pitches,
-          method = "rms", norm = "euclidean"              # Change summary & norm.
-      )
-  ) %>%
-  mutate(
-    timbre =
-      map(segments,
-          compmus_summarise, timbre,
-          method = "rms", norm = "euclidean"              # Change summary & norm.
-      )
-  )
 
 
 
 
-w5 %>%
-  compmus_gather_timbre() %>%
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = basis,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  scale_fill_viridis_c() +                              
-  theme_classic()
-```
 
 
-### Self similarity
-
-```{r}
-w5 %>%
-  compmus_self_similarity(timbre, "cosine") %>% 
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "")
-
-```
-
-
-Top song of 2021, Chaka Khan - I know you, I live you {.tabset}
-----------------
-
-### Top song of 2021, Chaka Khan - I know you, I live you, Pitch
-
-```{r}
-chaka <-
-  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=a6fff186744843ec") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-chaka %>%
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-  compmus_gather_chroma() %>% 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c()
-
-```
-
-### Timbre, 
-
-```{r}
-ikyily <-
-  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637") %>% 
-  compmus_align(bars, segments) %>%                     # Change `bars`
-  select(bars) %>%                                      #   in all three
-  unnest(bars) %>%                                      #   of these lines.
-  mutate(
-    pitches =
-      map(segments,
-          compmus_summarise, pitches,
-          method = "rms", norm = "euclidean"              # Change summary & norm.
-      )
-  ) %>%
-  mutate(
-    timbre =
-      map(segments,
-          compmus_summarise, timbre,
-          method = "rms", norm = "euclidean"              # Change summary & norm.
-      )
-  )
-
-
-
-ikyily %>%
-  compmus_gather_timbre() %>%
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = basis,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  scale_fill_viridis_c() +                              
-  theme_classic()
-```
-
-
-### Self similarity, 
-
-```{r}
-ikyily %>%
-  compmus_self_similarity(timbre, "cosine") %>% 
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "")
-```
-
-
-
-
-Keys and chords{data-navmenu="Features per year"}
-==============
-
-Column {.tabset .tabset-fade}
----------------------
-
-### Key name histogram
-
-```{r}
-keynamehist = topnummers %>% 
-  ggplot(aes(x = key_name)) + geom_bar(width = 0.5) + facet_wrap(~ playlist_name)
-
-ggplotly(keynamehist)
-```
-
-### Key minor major
-
-```{r}
-keymode = topnummers %>% 
-  ggplot(aes(x = key_mode)) + geom_bar(width = 0.5) + facet_wrap(~ playlist_name) + scale_x_discrete(guide = guide_axis(angle = -90)) 
-
-keymode
-```
-
-### Mode
-```{r}
-ggplot(topnummers, aes(x=mode)) + geom_histogram() + facet_wrap(~playlist_name) + labs(x = "mode: 0 = minor, 1 = major")
-```
-
-
-Tempo features{data-navmenu="Features per year"}
+Tempo features{data-navmenu="Tempo and Rhythm Related Features"}
 ===============
 
 Column{data-width=400}
 --------------
 
 ***
-An observation that I made is that the song with the highest tempo, can actually be viewed in halftime. It's the song parachutes by Jordan Mackampa. The song is in my opinion in halftime so  that would mean that it is not a 193 BPM but 97 BPM. 
+An observation that I made is that the song with the highest tempo, can actually be viewed in halftime. It's the song parachutes by Jordan Mackampa. The song is in my opinion in halftime so that would mean that it is not a 193 BPM but 97 BPM. 
+
+The tempo is the highest for songs with a 4/4 time signature. 
+
+Even though the 2021 playlist has less outliers, it has a wider range when it comes to the lower and the upper fence. This can be seen in the boxplot. 
+
+When at the songs that fall above the upper fence for the 2020 playlist, I can see that they have all been synced to a wrong tempo octave. Non of the top 5 highest tempo songs from that playlist actually have a higher tempo than 158 BPM, the upper fence. 
 
 ***
 2020
 ```{r}
 JTNV2020 %>%
-  summarize(minTempo = min(tempo), maxTempo = max(tempo))
+  summarize(minTempo = min(tempo), meanTempo = mean(tempo), maxTempo = max(tempo))
 ```
 
 ***
 2021
 ```{r}
 JTNV2021 %>%
-  summarize(minTempo = min(tempo), maxTempo = max(tempo))
+  summarize(minTempo = min(tempo), meanTempo = mean(tempo), maxTempo = max(tempo))
 ```
 
 
 
 SD Tempo {.tabset .tabset-fade}
 ---------
+### Tempo Boxplot
 
-### SD tempo
+```{r}
+"tempoi" = topnummers %>% 
+  ggplot(aes(x = playlist_name, y = tempo, fill = playlist_name)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("light blue", "tomato"))
+
+ggplotly(tempoi)
+```
+
+### SD Tempo
 
 ```{r}
 nv2020 <-
@@ -678,30 +511,6 @@ beide %>%
   )
 ```
 
-### Mean tempo
-
-```{r}
-"tempo mean" = topnummers %>% 
-  ggplot(aes(x = playlist_name, y = tempo)) +
-  stat_summary(fun = mean,
-               geom = "pointrange",
-               fun.min = min,
-               fun.max = max) 
-
-ggplotly(`tempo mean`)
-```
-
-### Tempo histogram
-
-```{r}
-tempohistogram = ggplot(topnummers, aes(x=tempo)) + 
-  geom_histogram(color="black", fill="white") + 
-  facet_wrap(~playlist_name) 
-
-ggplotly(tempohistogram)
-```
-
-
 ### time signature - tempo -mode
 
 ```{r}
@@ -719,175 +528,205 @@ ggplotly(timesigtempo)
 ```
 
 
-Key per song{data-navmenu="Features per topsong"}
+
+
+Tempograms{data-navmenu="Tempo and Rhythm Related Features"}
+=============
+
+Text{data-width=300}
+---------
+Both of the tempograms show issues with correctly identifying the songs in the right tempo octave. 
+The 2021 tempogram is even more flawed than the 2020 tempogram, since it barely shows any difference between 113 bpm and the other tempo's.
+
+
+***
+```{r}
+subtop2020 = subset(JTNV2020,select = c(playlist_name, track.name, tempo)) 
+
+knitr::kable(subtop2020[1,], "pipe" )
+```
+
+
+```{r}
+subtop2021 = subset(JTNV2021,select = c(playlist_name, track.name, tempo))
+
+knitr::kable(subtop2021[1,], "pipe" )
+```
+
+
+
+Tempograms{.tabset .tabset-fade}
+------------
+
+### 2020
+
+```{r}
+wx5 <- get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76")
+
+wx5 %>% tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+
+```
+
+
+### 2021
+
+```{r}
+ikyily2 <-get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637")
+
+ikyily2 %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+
+
+
+
+Keys and chords{data-navmenu="Harmonic Music Features"}
 ==============
 
+Column{data-width=250}
+----------
+***
+The most used key in 2021 is C#-major. The most used key in 2020 is A-minor. 
+The 2021 playlist contains 53 songs in a **major** key, and 47 in a minor key. 
+The 2020 playlist contains 56 songs in a **minor** key and 44 in a major key.  
+This can be linked to the mean valence, energy and tempo for both playlists as well. Those three features are all higher for the 2021 playlist. 
+From this the conclusion can be drawn that the 2021 playlist was a bit ‘happier’ than the 2020 playlist. 
+
+***
+Mean Valence 2020
+```{r}
+mean(JTNV2020$valence)
+```
+Mean Valence 2021
+```{r}
+mean(JTNV2021$valence)
+```
+
+
+
 Column {.tabset .tabset-fade}
-------------------
+---------------------
 
-### chordograms for my top songs, I know you, I live you
+### Key name histogram
 
 ```{r}
-circshift <- function(v, n) {
-  if (n == 0) v else c(tail(v, n), head(v, -n))
-}
+keynamehist = topnummers %>% 
+  ggplot(aes(x = key_name, fill = playlist_name)) + geom_bar(width = 0.5) + facet_wrap(~ playlist_name) +
+  scale_fill_manual(values = c("light blue", "tomato"))
 
-#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
-major_chord <-
-  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
-minor_chord <-
-  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
-seventh_chord <-
-  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+ggplotly(keynamehist)
+```
 
-major_key <-
-  c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
-minor_key <-
-  c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
+### Key minor major
 
-chord_templates <-
-  tribble(
-    ~name, ~template,
-    "Gb:7", circshift(seventh_chord, 6),
-    "Gb:maj", circshift(major_chord, 6),
-    "Bb:min", circshift(minor_chord, 10),
-    "Db:maj", circshift(major_chord, 1),
-    "F:min", circshift(minor_chord, 5),
-    "Ab:7", circshift(seventh_chord, 8),
-    "Ab:maj", circshift(major_chord, 8),
-    "C:min", circshift(minor_chord, 0),
-    "Eb:7", circshift(seventh_chord, 3),
-    "Eb:maj", circshift(major_chord, 3),
-    "G:min", circshift(minor_chord, 7),
-    "Bb:7", circshift(seventh_chord, 10),
-    "Bb:maj", circshift(major_chord, 10),
-    "D:min", circshift(minor_chord, 2),
-    "F:7", circshift(seventh_chord, 5),
-    "F:maj", circshift(major_chord, 5),
-    "A:min", circshift(minor_chord, 9),
-    "C:7", circshift(seventh_chord, 0),
-    "C:maj", circshift(major_chord, 0),
-    "E:min", circshift(minor_chord, 4),
-    "G:7", circshift(seventh_chord, 7),
-    "G:maj", circshift(major_chord, 7),
-    "B:min", circshift(minor_chord, 11),
-    "D:7", circshift(seventh_chord, 2),
-    "D:maj", circshift(major_chord, 2),
-    "F#:min", circshift(minor_chord, 6),
-    "A:7", circshift(seventh_chord, 9),
-    "A:maj", circshift(major_chord, 9),
-    "C#:min", circshift(minor_chord, 1),
-    "E:7", circshift(seventh_chord, 4),
-    "E:maj", circshift(major_chord, 4),
-    "G#:min", circshift(minor_chord, 8),
-    "B:7", circshift(seventh_chord, 11),
-    "B:maj", circshift(major_chord, 11),
-    "D#:min", circshift(minor_chord, 3)
-  )
+```{r}
+keymode = topnummers %>% 
+  ggplot(aes(x = key_mode, fill = playlist_name)) + geom_bar(width = 0.5) + facet_wrap(~ playlist_name) + scale_x_discrete(guide = guide_axis(angle = -90)) +
+  scale_fill_manual(values = c("light blue", "tomato"))
 
-key_templates <-
-  tribble(
-    ~name, ~template,
-    "Gb:maj", circshift(major_key, 6),
-    "Bb:min", circshift(minor_key, 10),
-    "Db:maj", circshift(major_key, 1),
-    "F:min", circshift(minor_key, 5),
-    "Ab:maj", circshift(major_key, 8),
-    "C:min", circshift(minor_key, 0),
-    "Eb:maj", circshift(major_key, 3),
-    "G:min", circshift(minor_key, 7),
-    "Bb:maj", circshift(major_key, 10),
-    "D:min", circshift(minor_key, 2),
-    "F:maj", circshift(major_key, 5),
-    "A:min", circshift(minor_key, 9),
-    "C:maj", circshift(major_key, 0),
-    "E:min", circshift(minor_key, 4),
-    "G:maj", circshift(major_key, 7),
-    "B:min", circshift(minor_key, 11),
-    "D:maj", circshift(major_key, 2),
-    "F#:min", circshift(minor_key, 6),
-    "A:maj", circshift(major_key, 9),
-    "C#:min", circshift(minor_key, 1),
-    "E:maj", circshift(major_key, 4),
-    "G#:min", circshift(minor_key, 8),
-    "B:maj", circshift(major_key, 11),
-    "D#:min", circshift(minor_key, 3)
-  )
+keymode
+```
 
+### Mode
+```{r}
+majmincount = ggplot(topnummers, aes(x=mode, fill = playlist_name)) + geom_histogram() + facet_wrap(~playlist_name) + labs(x = "mode: 0 = minor, 1 = major") +
+  scale_fill_manual(values = c("light blue", "tomato"))
 
-ikyily2 <-
-  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637") %>%
-  compmus_align(sections, segments) %>%
-  select(sections) %>%
-  unnest(sections) %>%
-  mutate(
-    pitches =
-      map(segments,
-          compmus_summarise, pitches,
-          method = "mean", norm = "manhattan"
-      )
-  )
-
-ikyily2 %>% 
-  compmus_match_pitch_template(
-    key_templates,         # Change to chord_templates if descired
-    method = "euclidean",  # Try different distance metrics
-    norm = "manhattan"     # Try different norms
-  ) %>%
-  ggplot(
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
-  ) +
-  geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
-  labs(x = "Time (s)", y = "")
+ggplotly(majmincount)
 ```
 
 
-### why why why why why
+Loudness{data-navmenu="Harmonic Music Features" data-orientation=rows}
+==========
+
+Graphs
+------------
+
+### Boxplot
+```{r}
+loudie = topnummers %>% 
+  ggplot(aes(x = playlist_name, y = loudness, fill = playlist_name)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("light blue", "tomato")) 
+
+ggplotly(loudie)
+```
+
+
+### Table Lowest Loudness 2020
+
 
 ```{r}
-w52  <-
-  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76") %>%
-  compmus_align(sections, segments) %>%
-  select(sections) %>%
-  unnest(sections) %>%
-  mutate(
-    pitches =
-      map(segments,
-          compmus_summarise, pitches,
-          method = "mean", norm = "manhattan"
-      )
-  )
+subloudJTNV2020 = subset(JTNV2020,select = c(loudness, track.name))
 
-w52 %>% 
-  compmus_match_pitch_template(
-    key_templates,         # Change to chord_templates if descired
-    method = "euclidean",  # Try different distance metrics
-    norm = "manhattan"     # Try different norms
-  ) %>%
-  ggplot(
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
-  ) +
-  geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
-  labs(x = "Time (s)", y = "")
+asc.loud.2020 = subloudJTNV2020 %>%
+  arrange(loudness)
+
+knitr::kable(asc.loud.2020[1:10,], "pipe" )
+```
+
+### Table Lowest Loudness 2021
+
+```{r}
+subloudJTNV2021 = subset(JTNV2021,select = c(loudness, track.name))
+
+asc.loud.2021 = subloudJTNV2021 %>%
+  arrange(loudness)
+
+knitr::kable(asc.loud.2021[1:10,], "pipe" )
+```
+
+Text{data-height=200}
+------------
+### Explaination
+The means and medians for both playlists are quite similar. However, the 2021 shows a broader distribution of the quantiles. The 2021 playlist also shows more outliers. The outlier with -35dB is a classical piece that I had to listen to for school. 
+Multiple of the outliers are classical music, which would explain why they may have a lower loudness value. 
+
+
+
+### Mean
+Mean Loudness 2020
+```{r}
+mean(JTNV2020$loudness)
+```
+Mean Loudness 2021
+```{r}
+mean(JTNV2021$loudness)
 ```
 
 
 
-
-
-
-
-
-
-Speechiness and Acousticness{data-navmenu="Features per year"}
+Speechiness and Acousticness{data-navmenu="Harmonic Music Features"}
 ============
 
 Means{data-width=300}
 ----------
+
+### Explaination
+As you can see, the mean for acousticness is higher for the 2021 playlist and the mean for speechiness is higher for the 2020 playlist. The 'outlier' that can be seen in the histogram for the 2020 playlist is a rap song called D/Vision by JID. The fact that it is a rap song explains the high level of speechiness. Most of the songs with high acousticness are classical songs, of which some are from a classical playlist that I had to study for a school assignment.
+
+Something that is interesting to me is that the 2021 playlist shows a negative correlation when it comes to acousticness and speechiness. 
+
+Correlation 2020, 2021 - Acousticness, Speechiness
+```{r}
+cor(JTNV2020$acousticness, JTNV2020$speechiness)
+```
+
+```{r}
+cor(JTNV2021$acousticness, JTNV2021$speechiness)
+```
+
+
 ### Means
 mean speechiness 2020
 ```{r}
@@ -910,9 +749,6 @@ mean(JTNV2021$acousticness)
 ```
 
 
-### Explaination
-As you can see, the mean for acousticness is higher for the 2021 playlist and the mean for speechiness is higher for the 2020 playlist. The 'outlier' that can be seen in the histogram for the 2020 playlist is a rap song called D/Vision by JID. The fact that it is a rap song explains the high level of speechiness. Most of the songs with high acousticness are classical songs, of which some are from a classical playlist that I had to study for a school assignment. 
-
 Graphs{data-width=700, .tabset .tabset-fade}
 ----------
 
@@ -920,7 +756,9 @@ Graphs{data-width=700, .tabset .tabset-fade}
 
 ```{r}
 speechihist = topnummers %>%
-  ggplot(aes(x = speechiness)) + geom_histogram() + facet_wrap(~playlist_name, dir = "v")
+  ggplot(aes(x = speechiness, fill = playlist_name)) + geom_histogram() + facet_wrap(~playlist_name, dir = "v") + 
+  scale_fill_manual(values = c("light blue", "tomato"))
+
 
 ggplotly(speechihist)
 ```
@@ -929,7 +767,9 @@ ggplotly(speechihist)
 
 ```{r}
 acousthist = topnummers %>%
-  ggplot(aes(x = acousticness)) + geom_histogram() + facet_wrap(~playlist_name, dir = "v")
+  ggplot(aes(x = acousticness, fill = playlist_name)) + geom_histogram() + facet_wrap(~playlist_name, dir = "v") +
+  scale_fill_manual(values = c("light blue", "tomato"))
+
 
 ggplotly(acousthist)
 ```
@@ -940,25 +780,284 @@ ggplotly(acousthist)
 
 ```{r}
 acsp = topnummers %>% 
-  ggplot(aes(x = speechiness, y = acousticness)) + geom_point(alpha = 0.7) + geom_smooth() + 
-  facet_wrap(~playlist_name, dir = "v")
+  ggplot(aes(x = speechiness, y = acousticness, fill = playlist_name)) + geom_point(alpha = 0.85) + geom_smooth() + 
+  facet_wrap(~playlist_name, dir = "v") +
+  scale_fill_manual(values = c("light blue", "tomato"))
+
 
 ggplotly(acsp)
 ```
 
 
 
-Dendograms{data-navmenu="Features per year"}
+
+
+
+Chroma Features{data-navmenu="Harmonic Music Features"}
+==========================
+
+Top song of 2020, SAULT - whywhywhywhywhy {.tabset}
+---------------------------
+
+### Top song of 2020, SAULT - whywhywhywhywhy, Pitch
+
+```{r, echo=FALSE}
+
+whywhywhy <-
+  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=dcd0036a52154ea5") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+pitchw5 = whywhywhy %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+ggplotly(pitchw5)
+
+
+```
+
+### Timbre
+
+```{r}
+w5 <-
+  get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76") %>% 
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+
+
+
+w5 %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+
+
+Top song of 2021, Chaka Khan - I know you, I live you {.tabset}
+----------------
+
+### Top song of 2021, Chaka Khan - I know you, I live you, Pitch
+
+```{r}
+chaka <-
+  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=a6fff186744843ec") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+pitchchaka = chaka %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+
+ggplotly(pitchchaka)
+
+```
+
+### Timbre, 
+
+```{r}
+ikyily <-
+  get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637") %>% 
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+
+
+ikyily %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+```
+
+
+
+
+Text{data-width=300}
+----------
+***
+**Pitch**
+
+**Why Why Why Why Why**
+During the song, D is the most used pitch. Other common pitches are F and A. This could be explained by the fact that a D-Minor chord consists of D-F-A. 
+Another pitch that seems to have a high magnitude is Db. 
+An explanation could be that the song features the 7th tone often, but I think it is more likely that the 7th tone here is C, which is also shown to have a relatively high magnitude for some parts of the song. 
+In my opinion it is more likely that the D was read by the algorithm as a Db. 
+
+**I Know You, I Live You **
+The pitches that have the highest magnitude are C, Db, D, G and A. According to the spotify analysis the key for this song is Gm. This would explain the high magnitude for the G and D pitch. The dominant key for Gm is Dm, which would explain the high magnitude for the A tone, since the D-minor chord consists of D-F-A. 
+
+
+**Timbre**
+It can be said that for both the 2020 and the 2021 song the lower coefficients capture more of the timbre information. 
+‘Why Why Why Why Why’ shows a high magnitude for c01, c02 and c03. ‘I Know You, I Live You’ mainly shows a high magnitude for c02. 
+
+
+
+
+
+
+Self Similarity{data-navmenu="Harmonic Music Features"}
+================
+
+Column{data-width=700, .tabset .tabset-fade}
+---------
+
+### Self similarity 2020
+
+```{r}
+SSW5 = w5 %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+
+ggplotly(SSW5)
+
+```
+
+### Self similarity 2021
+
+```{r}
+SSIKY = ikyily %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+
+ggplotly(SSIKY)
+```
+
+
+Explaination
+-----------
+
+The structure of the 2020 top track, 'Why Why Why Why Why', can be seen as an A-B-C-B-C-B structure.The parts of the song that are instrumental are often found at the beginning of a new letter, for example, the darker blue block at duration 0-16, the intro and 59-65. 
+This is a song that features a lot a variation between the different verses and choruses. 
+I think that explains why the matrix is not the cleanest. 
+
+The structure of the 2021 top track, 'I Know You, I Live You' can be seen as an A-B-A-B-B structure. 
+
+
+
+
+
+Clustering
 ==============
 
 Text{data-width=300}
 ---------
+***
+Some songs that are linked in the **2020 dendrogram** include ‘She Can’t Love You’ and ‘Mad At Me’. These songs are both R&B songs. ‘Back Pocket’ and ‘Lockdown’ are both songs in which the baseline plays an important role. They also have a similar timbre coefficient. 
+The top song for 2020, ‘Why Why Why Why Why’, is clustered with ‘Breeze’, which is the 18th song on that playlist. They have similar values for speechiness, timbre coefficient c02 and liveness. 
+
+***
+Some songs that are linked in the **2021 dendrogram** include ‘Krunk’ and ‘Little Lady’. These songs being linked surprised me, because they don’t sound very similar to me. When looking at the heat map, I can see that they are actually quite similar if you look at speechiness, loudness and key. These are some features that I don’t necessarily notice consciously when I listen to music, but that are clearly still important for clustering music. 
+Another cluster that surprised me is ‘You Oughta Know’ and ‘Famous’, one being a rock song, while the other is R&B. They are similar when you look at the timbre features, having very similar values for multiple timbre coefficients. They also have similar values for instrumentalness and danceability. 
 
 
-Dendogram{.tabset .tabset-fade}
+Heatmaps{.tabset .tabset-fade}
 ----------
 
-### 2020
 ```{r}
 mark2020 <-
   get_playlist_audio_features("", "37i9dQZF1ELZEbCiN09pZG?si=d70969c7136a48f6") %>%
@@ -1013,15 +1112,9 @@ goed2020.20 = mark2020_juice %>%
 
 jtnv2020mark_dist <- dist(goed2020.20, method = "euclidean")
 
-jtnv2020mark_dist %>% 
-  hclust(method = "single") %>% # Try single, average, and complete.
-  dendro_data() %>%
-  ggdendrogram()
-
 ```
 
 
-### 2021
 
 ```{r}
 mark2021 <-
@@ -1077,10 +1170,6 @@ goed2021.20 = mark2021_juice %>%
 
 jtnv2021mark_dist <- dist(goed2021.20, method = "euclidean")
 
-jtnv2021mark_dist %>% 
-  hclust(method = "single") %>% # Try single, average, and complete.
-  dendro_data() %>%
-  ggdendrogram()
 ```
 
 
@@ -1117,42 +1206,19 @@ heatmaply(
 
 
 
-Tempograms
-=============
 
-Text{data-width=300}
----------
+Conclusion
+===========
 
+Some of the features that I analysed for this portfolio show high similarity between the 2020 playlist and the 2021 playlist. They gave similar energy histograms, both used 4/4 the most for time signature, and had almost the same tempo mean and median. Other features like mean acousticness and median loudness were almost the same for both playlists. 
 
-Tempograms{.tabset .tabset-fade}
-------------
+There were also some features that were less similar. The 2021 playlist showed a broader width for the valence quantiles. The songs were also more scattered around the 2021 valence-energy-mode graph than in the 2020 graph. In other words, the 2020 playlist showed more correlation between energy and valence. 
 
-### 2020
-
-```{r}
-wx5 <- get_tidy_audio_analysis("4zwq3QUKgMNk0NSLl7fpbP?si=adbccc789d3a4d76")
-
-wx5 %>% tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic()
-
-```
+Both of the top songs in these playlists showed a high magnitude for the pitched D and Db, which is interesting to me because D and Db were the number 2 and 3 most used keys for 2021, but they were way less used in 2020.  
 
 
-### 2021
+And then there were the cases of features that didn't show a lot of similarity, but that were in my opinion influenced by songs that didn't belong in my top tracks. 
+For instance, the danceability data was influenced by a couple of tracks that ended up in my top 100 because I had to study them for a school assignment. These same songs also influenced the loudness and speechiness features. 
+There were also some problems with analysing the tempo features, since some of the outliers were in my opinion in the wrong tempo octave. 
 
-```{r}
-ikyily2 <-get_tidy_audio_analysis("0W8MpnhaImy0oPRkVpRvjI?si=8da5d812dfad4637")
-
-ikyily2 %>%
-  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic()
-```
 
